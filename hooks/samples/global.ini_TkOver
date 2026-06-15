@@ -1,0 +1,9 @@
+[ha_dr_provider_tkover]
+provider = TkOver
+path = /usr/share/SAPHanaSR-angi
+tkover_timeout = 30
+execution_order = 2
+
+[trace]
+ha_dr_tkover = info
+

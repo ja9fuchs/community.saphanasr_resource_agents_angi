@@ -1,0 +1,8 @@
+[ha_dr_provider_costopt]
+provider = CostOpt
+path = /usr/share/SAPHanaSR-angi
+userKey = costoptkey
+execution_order = 1
+
+[trace]
+ha_dr_costopt = info

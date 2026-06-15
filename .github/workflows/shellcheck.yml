@@ -1,0 +1,29 @@
+name: Shellcheck
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ra/**'
+      - 'alerts/**'
+      - 'tools/**'
+      - 'scripts/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'ra/**'
+      - 'alerts/**'
+      - 'tools/**'
+      - 'scripts/**'
+
+jobs:
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run
+        run: |
+          find ra alerts tools scripts -type f \
+            -exec awk '/^#!.*bash/{print FILENAME} {nextfile}' {} + \
+            | xargs shellcheck -a -x -s bash

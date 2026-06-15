@@ -1,0 +1,24 @@
+name: Mandoc
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'man/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'man/**'
+
+jobs:
+  mandoc:
+    name: Mandoc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install
+        run: sudo apt-get -y install mandoc
+      - name: Run
+        run: |
+          find man -type f -name '*.[1-9]' \
+            | xargs mandoc -T lint

@@ -1,0 +1,152 @@
+'\"
+.\"
+.TH "ocf_heartbeat_SAPHanaFilesystem" "7" "11/10/2025" "" "OCF resource agents"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+ocf_heartbeat_SAPHanaFilesystem \- SAPHanaFilesystem \- Monitors mounted SAP HANA filesystems\&.
+.SH "SYNOPSIS"
+.HP \w'\fBSAPHanaFilesystem\fR\ 'u
+\fBSAPHanaFilesystem\fR [start | stop | status | monitor | meta\-data | validate\-all]
+.SH "DESCRIPTION"
+.PP
+The SAPHanaFilesystem resource agent (RA) monitors mounted SAP HANA filesystems by checking read/write access\&. This RA does neither mount nor umount any filesystem\&. In case the filesystem monitor fails, the RA decides how to proceed based on HANA system replication status\&. The monitor and action timeouts are significantly shorter than SAPHanaController resource timeouts\&. This results in faster takeover actions\&.
+.PP
+* Behaviour on HANA primary sites
+.PP
+srHook=SOK: In case of monitor failure the Linux cluster tries to stop and restart the SAPHanaFilesystem resource (not the real filesystem)\&. If that stop fails and the HANA system replication is in sync the node gets fenced\&. In consequence an HANA sr_takeover will be triggered\&.
+.PP
+srHook=SFAIL: In case of monitor failure the Linux cluster tries to stop and restart the SAPHanaFilesystem resource (not the real filesystem)\&. If the HANA system replication is not in sync this will be repeated until it gains success or migration\-threshold is reached\&.
+.PP
+* Behaviour on HANA secondary sites
+.PP
+In case of monitor failure the Linux cluster tries to stop and restart the SAPHanaFilesystem resource (not the real filesystem)\&. This will be repeated until it gains success or migration\-threshold is reached\&.
+.SH "SUPPORTED PARAMETERS"
+.PP
+\fBSID\fR
+.RS 4
+The SAP System Identifier (SID)
+.sp
+(required, string, no default)
+.RE
+.PP
+\fBInstanceNumber\fR
+.RS 4
+The SAP Instance Number \- currently not used (placeholder)
+.sp
+(optional, string, no default)
+.RE
+.PP
+\fBDIRECTORY\fR
+.RS 4
+The directory to be checked\&. Default is "/hana/shared/\e$SID"\&. The RA creates data in an own subdirectory \&.heartbeat_SAPHanaFilesystem\&. Do not touch this hidden subdirectory\&.
+.sp
+(optional, string, no default)
+.RE
+.PP
+\fBON_FAIL_ACTION\fR
+.RS 4
+TODO \- parameter to decide fence or ignore\&. default is stop_error to force fence\&.
+.sp
+(optional, string, no default)
+.RE
+.SH "SUPPORTED ACTIONS"
+.PP
+This resource agent supports the following actions (operations):
+.PP
+\fBstart\fR
+.RS 4
+Starts the resource\&. Suggested minimum timeout: 10\&.
+.RE
+.PP
+\fBstop\fR
+.RS 4
+Stops the resource\&. Suggested minimum timeout: 20\&.
+.RE
+.PP
+\fBstatus\fR
+.RS 4
+Performs a status check\&. Suggested minimum timeout: 60\&.
+.RE
+.PP
+\fBmonitor\fR
+.RS 4
+Performs a detailed status check\&. Suggested minimum timeout: 120\&. Suggested interval: 120\&.
+.RE
+.PP
+\fBvalidate\-all\fR
+.RS 4
+Performs a validation of the resource configuration\&. Suggested minimum timeout: 5\&.
+.RE
+.PP
+\fBmeta\-data\fR
+.RS 4
+Retrieves resource agent metadata (internal use only)\&. Suggested minimum timeout: 5\&.
+.RE
+.PP
+\fBmethods\fR
+.RS 4
+Suggested minimum timeout: 5\&.
+.RE
+.PP
+\fBreload\fR
+.RS 4
+Suggested minimum timeout: 5\&.
+.RE
+.SH "EXAMPLE CRM SHELL"
+.PP
+The following is an example configuration for a SAPHanaFilesystem resource using the
+\fBcrm\fR(8)
+shell:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+primitive p_SAPHanaFilesystem ocf:heartbeat:SAPHanaFilesystem \e
+  params \e
+    SID=\fIstring\fR \e
+  op monitor depth="0" timeout="120" interval="120" 
+.fi
+.if n \{\
+.RE
+.\}
+.SH "EXAMPLE PCS"
+.PP
+The following is an example configuration for a SAPHanaFilesystem resource using
+\fBpcs\fR(8)
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+pcs resource create p_SAPHanaFilesystem ocf:heartbeat:SAPHanaFilesystem \e
+  SID=\fIstring\fR \e
+  op monitor OCF_CHECK_LEVEL="0" timeout="120" interval="120" 
+.fi
+.if n \{\
+.RE
+.\}
+.SH "SEE ALSO"
+.PP
+\fBocf_heartbeat_SAPHanaController\fR(7) , \fBocf_heartbeat_SAPHanaTopology\fR(7)
+.SH "AUTHOR"
+.PP
+\fBSAPHanaSR-angi contributors (see the resource agent source for information about individual authors)\fR

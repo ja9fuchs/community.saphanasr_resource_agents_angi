@@ -1,0 +1,3 @@
+upstream: https://github.com/SUSE/SAPHanaSR
+branch:   main
+commit:   96b5aa666b710d0c7f038ea6b3063eaf1f46bb81

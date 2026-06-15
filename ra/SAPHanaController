@@ -1,0 +1,158 @@
+#!/bin/bash
+#
+# SAPHanaController
+#
+# Description:  Manages two SAP HANA Databases in System Replication
+#               SAPHanaTopology and SAPHanaController are both needed
+#               SAPHanaController is dependent of the analysis of
+#               SAPHanaTopology
+#
+##############################################################################
+#
+# SAPHanaController (short saphana)
+# Author:       Fabian Herschel, November 2013
+# Support:      linux@sap.com
+# License:      GNU General Public License (GPL)
+# Copyright:    (c) 2013,2014 SUSE Linux Products GmbH
+#               (c) 2015-2026 SUSE LLC
+#
+# An example usage:
+#      See usage() function below for more details...
+#
+# OCF instance parameters:
+#   OCF_RESKEY_SID
+#   OCF_RESKEY_InstanceNumber
+#   OCF_RESKEY_DIR_EXECUTABLE   (optional, well known directories will be searched by default)
+#   OCF_RESKEY_DIR_PROFILE      (optional, well known directories will be searched by default)
+#   OCF_RESKEY_INSTANCE_PROFILE (optional, well known directories will be searched by default)
+#   OCF_RESKEY_PREFER_SITE_TAKEOVER (optional, default is no)
+#   OCF_RESKEY_DUPLICATE_PRIMARY_TIMEOUT (optional, time difference needed between two last-primary-tiemstampe (lpt))
+#
+# HANA must support the following commands:
+#     hdbnsutil -sr_stateConfiguration
+#     hdbnsutil -sr_takeover
+#     hdbnsutil -sr_register
+#     landscapeHostConfiguration.py
+#     systemReplicationStatus.py
+#
+#######################################################################
+SAPHanaControllerVersion="1.3.3"
+#
+# Initialization:
+timeB=$(date '+%s')
+
+export raType="saphana_"
+OCF_FUNCTIONS_DIR="${OCF_FUNCTIONS_DIR:-${OCF_ROOT}/lib/heartbeat}"
+# shellcheck source=/dev/null
+source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
+# TODO PRIO1: NG - adjust the correct path and file name for the library to be sourced for first testing use current directory
+# shellcheck source=./ra/saphana-common-lib
+source /usr/lib/SAPHanaSR-angi/saphana-common-lib
+# shellcheck source=./ra/saphana-controller-common-lib
+source /usr/lib/SAPHanaSR-angi/saphana-controller-common-lib
+# shellcheck source=./ra/saphana-controller-lib
+source /usr/lib/SAPHanaSR-angi/saphana-controller-lib
+
+#
+#######################################################################
+#
+# KNOWN PROBLEMS TO BE FIXED:
+# P001 - Setup with scale-out and PREFER_SITE_TAKEOVER=true, AUTOMATED_REGISTER=true. If you kill a primary instance it could happen that the primary sets itself to lpt=10 and the secondary will be set to SFAIL and lpt=10 this results in a WAITING4LPA situation. ==> A down/dying primary may never set SFAIL for a secondary!
+# P002 - in the swarm non master-nameserver nodes may never set the lpt=date
+# P003 - in the swarm non master nodes may NOT do a full master-walk
+# P004 - Monitor on "dying" primary and failing systemReplicationStatus script set secondary to SFAIL, so local restart was processed instead of takeover
+
+#
+# function: main - main function to operate
+# params:   ACTION
+# globals:  OCF_*(r), CLACT(w), ra_rc(rw), $0(r)
+#
+
+
+if [ "$#" != "1" ]
+then
+    "${raType}"usage
+    exit "$OCF_ERR_ARGS"
+fi
+
+ACTION="$1"
+if [ "$ACTION" = "status" ]; then
+    ACTION=monitor
+fi
+
+if is_clone
+then
+    CLACT=_clone
+else
+    if [[ "$ACTION" = "promote" || "$ACTION" = "demote" ]]
+    then
+        super_ocf_log err "ACT: $ACTION called in a non multi-state environment"
+        exit "$OCF_ERR_ARGS"
+    fi
+fi
+
+# These operations don't require OCF parameters to be set
+case "$ACTION" in
+    usage|methods)  "${raType}""$ACTION"
+                    exit "$OCF_SUCCESS";;
+    meta-data)      "${raType}"meta_data
+                    exit "$OCF_SUCCESS";;
+    notify)         # just ignore
+                    exit "$OCF_SUCCESS";;
+    *)
+                    super_ocf_log info "RA ==== begin action $ACTION$CLACT ($SAPHanaControllerVersion) ===="
+                    core_init "$SAPHanaControllerVersion" "$timeB"
+                    ;;
+esac
+"${raType}"init
+super_ocf_log info "RUNTIME finished ${raType}init"
+
+if ! ocf_is_root
+then
+    super_ocf_log err "ACT: $0 must be run as root"
+    exit "$OCF_ERR_PERM"
+fi
+
+# parameter check
+if  [ -z "$OCF_RESKEY_SID" ]
+then
+    super_ocf_log err "ACT: Please set parameter SID!"
+    exit "$OCF_ERR_ARGS"
+fi
+
+if  [ -z "$OCF_RESKEY_InstanceNumber" ]
+then
+    super_ocf_log err "ACT: Please set parameter InstanceNumber!"
+    exit "$OCF_ERR_ARGS"
+fi
+
+super_ocf_log info "RUNTIME ready to process action '$ACTION'"
+ra_rc="$OCF_ERR_UNIMPLEMENTED"
+case "$ACTION" in
+    start|stop|monitor|promote|demote) # Standard controlling actions
+        "${raType}""$ACTION$CLACT"
+        ra_rc="$?"
+        ;;
+    validate-all)
+        "${raType}"validate
+        ra_rc="$?"
+        ;;
+    lpa_check)
+        lpa_check_lpt_status
+        ra_rc="$?"
+        ;;
+    reload)
+        ra_rc="$OCF_SUCCESS"
+        ;;
+    *)  # seems to be an unknown request
+        "${raType}"methods
+        ra_rc="$OCF_ERR_UNIMPLEMENTED"
+        ;;
+esac
+timeE="$(date '+%s')"
+(( timeR = timeE - timeB ))
+set_g_times
+super_ocf_log info "RUNTIME ==== end action $ACTION$CLACT with rc=${ra_rc} ($SAPHanaControllerVersion) (${timeR}s)===="
+super_ocf_log info "RA ==== end action $ACTION$CLACT with rc=${ra_rc} ($SAPHanaControllerVersion) (${timeR}s; times=$g_time_proc $g_time_chld)===="
+exit "${ra_rc}"
+# set ts=4 sw=4 sts=4 et

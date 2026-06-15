@@ -1,0 +1,150 @@
+'\"
+.\"
+.TH "ocf_heartbeat_SAPHanaTopology" "7" "11/10/2025" "" "OCF resource agents"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+ocf_heartbeat_SAPHanaTopology \- Analyzes SAP HANA System Replication Topology\&.
+.SH "SYNOPSIS"
+.HP \w'\fBSAPHanaTopology\fR\ 'u
+\fBSAPHanaTopology\fR [start | stop | status | monitor | meta\-data | validate\-all]
+.SH "DESCRIPTION"
+.PP
+This RA analyzes the SAP HANA topology and "sends" all findings via the node status attributes to all nodes in the cluster\&. These attributes are taken by the SAPHana RA to control the SAP Hana Databases\&. In addition it starts and monitors the local saphostagent\&.
+.PP
+1\&. Interface to monitor a HANA system: landscapeHostConfiguration\&.py landscapeHostConfiguration\&.py has some detailed output about HANA system status and node roles\&. For our monitor the overall status is relevant\&. This overall status is reported by the return code of the script: 0: Internal Fatal 1: ERROR 2: WARNING 3: INFO (maybe a switch of the resource running) 4: OK The SAPHanaTopology resource agent will interpret return codes 1 as NOT\-RUNNING (or 1 failure) and return codes 2+3+4 as RUNNING\&. SAPHanaTopology scans the output table of landscapeHostConfiguration\&.py to identify the roles of the cluster node\&. Roles means configured and current role of the nameserver as well as the indexserver\&.
+.PP
+2\&. Interface is hdbnsutil The interface hdbnsutil is used to check the "topology" of the system replication as well as the current configuration (primary/secondary) of a SAP HANA database instance\&. A second task of the interface is the possibility to run a system replication takeover (sr_takeover) or to register a former primary to a newer one (sr_register)\&.
+.PP
+3\&. saphostctrl The interface saphostctrl uses the function ListInstances to figure out the virtual host name of the SAP HANA instance\&. This is the hostname used during the HANA installation\&.
+.SH "SUPPORTED PARAMETERS"
+.PP
+\fBSID\fR
+.RS 4
+The SAP System Identifier (SID)
+.sp
+(required, string, no default)
+.RE
+.PP
+\fBInstanceNumber\fR
+.RS 4
+The SAP Instance Number
+.sp
+(required, string, no default)
+.RE
+.PP
+\fBHANA_CALL_TIMEOUT\fR
+.RS 4
+Define timeout how long a call to HANA to receive information can take\&. This could be eg landscapeHostConfiguration\&.py\&. There are some specific calls to HANA which have their own timeout values\&. For example the takeover command does not timeout (inf)\&. If the timeout is reached, the return code will be 124 or 137 (for kill \-9)\&. If you increase the timeouts for HANA calls you should also adjust the operation timeouts of your cluster resources\&.
+.sp
+(optional, string, default "120")
+.RE
+.PP
+\fBDIR_EXECUTABLE\fR
+.RS 4
+Path to the SAP Hana Instance executable directory\&. If not set the RA tries /usr/sap/$SID/$InstanceName/exe\&. While InstanceName is the string of "HDB" and \e$InstanceNumber for SAP Hana databases\&.
+.sp
+(optional, string, no default)
+.RE
+.SH "SUPPORTED ACTIONS"
+.PP
+This resource agent supports the following actions (operations):
+.PP
+\fBstart\fR
+.RS 4
+Starts the resource\&. Suggested minimum timeout: 600\&.
+.RE
+.PP
+\fBstop\fR
+.RS 4
+Stops the resource\&. Suggested minimum timeout: 300\&.
+.RE
+.PP
+\fBstatus\fR
+.RS 4
+Performs a status check\&. Suggested minimum timeout: 60\&.
+.RE
+.PP
+\fBmonitor\fR
+.RS 4
+Performs a detailed status check\&. Suggested minimum timeout: 600\&. Suggested interval: 60\&.
+.RE
+.PP
+\fBvalidate\-all\fR
+.RS 4
+Performs a validation of the resource configuration\&. Suggested minimum timeout: 5\&.
+.RE
+.PP
+\fBmeta\-data\fR
+.RS 4
+Retrieves resource agent metadata (internal use only)\&. Suggested minimum timeout: 5\&.
+.RE
+.PP
+\fBmethods\fR
+.RS 4
+Suggested minimum timeout: 5\&.
+.RE
+.PP
+\fBreload\fR
+.RS 4
+Suggested minimum timeout: 5\&.
+.RE
+.SH "EXAMPLE CRM SHELL"
+.PP
+The following is an example configuration for a SAPHanaTopology resource using the
+\fBcrm\fR(8)
+shell:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+primitive p_SAPHanaTopology ocf:heartbeat:SAPHanaTopology \e
+  params \e
+    SID=\fIstring\fR \e
+    InstanceNumber=\fIstring\fR \e
+  op monitor depth="0" timeout="600" interval="60" 
+.fi
+.if n \{\
+.RE
+.\}
+.SH "EXAMPLE PCS"
+.PP
+The following is an example configuration for a SAPHanaTopology resource using
+\fBpcs\fR(8)
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+pcs resource create p_SAPHanaTopology ocf:heartbeat:SAPHanaTopology \e
+  SID=\fIstring\fR \e
+  InstanceNumber=\fIstring\fR \e
+  op monitor OCF_CHECK_LEVEL="0" timeout="600" interval="60" 
+.fi
+.if n \{\
+.RE
+.\}
+.SH "SEE ALSO"
+.PP
+\fBocf_heartbeat_SAPHanaController\fR(7) , \fBocf_heartbeat_SAPHanaFilesystem\fR(7)
+.SH "AUTHOR"
+.PP
+\fBSAPHanaSR-angi contributors (see the resource agent source for information about individual authors)\fR

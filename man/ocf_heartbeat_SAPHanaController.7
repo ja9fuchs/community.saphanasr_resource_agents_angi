@@ -1,0 +1,237 @@
+'\"
+.\"
+.TH "ocf_heartbeat_SAPHanaController" "7" "11/10/2025" "" "OCF resource agents"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+ocf_heartbeat_SAPHanaController \- Manages two SAP HANA database systems in system replication (SR)\&.
+.SH "SYNOPSIS"
+.HP \w'\fBSAPHanaController\fR\ 'u
+\fBSAPHanaController\fR [start | stop | status | monitor | promote | demote | meta\-data | validate\-all]
+.SH "DESCRIPTION"
+.PP
+The SAPHanaController resource agent manages two SAP HANA database systems which are configured in system replication\&. SAPHanaController supports Scale\-Up and Scale\-Out scenarios\&.
+.PP
+Managing the two SAP HANA database systems means that the resource agent controls the start/stop of the instances\&. In addition the resource agent is able to monitor the SAP HANA databases to check their availability on landscape host configuration level\&. For this monitoring the resource agent relies on interfaces provided by SAP\&. A third task of the resource agent is to also check the synchronisation status of the two SAP HANA databases\&. If the synchronisation is not "SOK", then the cluster avoids to failover to the secondary side, if the primary fails\&. This is to improve the data consistency\&.
+.PP
+The resource agent uses the following four interfaces provided by SAP:
+.PP
+1\&. sapcontrol/sapstartsrv The interface sapcontrol/sapstartsrv is used to start/stop a HANA database instance/system
+.PP
+2\&. landscapeHostConfiguration The interface is used to monitor a HANA system\&. The python script is named landscapeHostConfiguration\&.py\&. landscapeHostConfiguration\&.py has some detailed output about HANA system status and node roles\&. For our monitor the overall status is relevant\&. This overall status is reported by the return code of the script: 0: Internal Fatal, 1: ERROR, 2: WARNING, 3: INFO, 4: OK The SAPHanaController resource agent will interpret return codes 0 as FATAL, 1 as not\-running or ERROR and and return codes 2+3+4 as RUNNING\&.
+.PP
+3\&. hdbnsutil The interface hdbnsutil is used to check the "topology" of the system replication as well as the current configuration (primary/secondary) of a SAP HANA database instance\&. A second task of the interface is the possibility to run a system replication takeover (sr_takeover) or to register a former primary to a newer one (sr_register)\&.
+.PP
+4\&. systemReplicationStatus systemReplicationStatus\&.py is used to poll the status of the system replication\&. The result is stored in the cluster attribute hana_$sid"_site_srPoll_$site\&.
+.PP
+5\&. saphostctrl The interface saphostctrl uses the function ListInstances to figure out the virtual host name of the SAP HANA instance\&. This is the hostname used during the HANA installation\&.
+.PP
+.SH "SUPPORTED PARAMETERS"
+.PP
+\fBSID\fR
+.RS 4
+SAP System Identifier (SID) like "SLE" or "HAE"
+.sp
+(required, string, no default)
+.RE
+.PP
+\fBInstanceNumber\fR
+.RS 4
+SAP instance number like "00" or "07"
+.sp
+(required, string, no default)
+.RE
+.PP
+\fBPREFER_SITE_TAKEOVER\fR
+.RS 4
+Should cluster/RA prefer to switchover to secondary site instead of restarting primary site locally? Default="true" no: Do prefer restart locally yes: Do prefer takeover to remote site never: Do never run a sr_takeover (promote) at the secondary side\&. THIS VALUE IS CURRENTLY NOT SUPPORTED\&.
+.sp
+(optional, string, default "true")
+.RE
+.PP
+\fBAUTOMATED_REGISTER\fR
+.RS 4
+The parameter AUTOMATED_REGISTER defines, whether a former primary instance should be registered automatically by the resource agent during cluster/resource start, if the DUPLICATE_PRIMARY_TIMEOUT is expired\&.\&.\&. TDB
+.sp
+(optional, boolean, default
+false)
+.RE
+.PP
+\fBDUPLICATE_PRIMARY_TIMEOUT\fR
+.RS 4
+Time difference needed between to primary time stamps, if a dual\-primary situation occurs\&. If the time difference is less than the time gap, then the cluster holds one or both instances in a "WAITING" status\&. This is to give an admin a chance to react on a failover\&. A failed former primary will be registered after the time difference is passed\&. After this registration to the new primary all data will be overwritten by the system replication\&.
+.sp
+(optional, string, default "7200")
+.RE
+.PP
+\fBHANA_CALL_TIMEOUT\fR
+.RS 4
+Define timeout how long a call to HANA to receive information can take\&. This could be eg landscapeHostConfiguration\&.py\&. There are some specific calls to HANA which have their own timeout values\&. For example the takeover command does not timeout (inf)\&. If the timeout is reached, the return code will be 124 or 137 (for kill \-9)\&. If you increase the timeouts for HANA calls you should also adjust the operation timeouts of your cluster resources\&.
+.sp
+(optional, string, default "120")
+.RE
+.PP
+\fBDIR_EXECUTABLE\fR
+.RS 4
+The full qualified path where to find sapstartsrv and sapcontrol\&. Specify this parameter, if you have changed the SAP kernel directory location after the default SAP installation\&.
+.sp
+(optional, string, no default)
+.RE
+.PP
+\fBDIR_PROFILE\fR
+.RS 4
+The full qualified path where to find the SAP START profile\&. Specify this parameter, if you have changed the SAP profile directory location after the default SAP installation\&.
+.sp
+(optional, string, no default)
+.RE
+.PP
+\fBINSTANCE_PROFILE\fR
+.RS 4
+The name of the SAP HANA instance profile\&. Specify this parameter, if you have changed the name of the SAP HANA instance profile after the default SAP installation\&. Normally you do not need to set this parameter\&.
+.sp
+(unique, optional, string, no default)
+.RE
+.PP
+\fBON_FAIL_ACTION\fR
+.RS 4
+Technical preview: ON_FAIL_ACTION selects the level RA escalates monitor failures on primary\&. Useful values are "fence" and "proceed"\&.
+.sp
+(optional, string, default "proceed")
+.RE
+.SH "SUPPORTED ACTIONS"
+.PP
+This resource agent supports the following actions (operations):
+.PP
+\fBstart\fR
+.RS 4
+Starts the resource\&. Suggested minimum timeout: 3600\&.
+.RE
+.PP
+\fBstop\fR
+.RS 4
+Stops the resource\&. Suggested minimum timeout: 600\&.
+.RE
+.PP
+\fBstatus\fR
+.RS 4
+Performs a status check\&. Suggested minimum timeout: 60\&.
+.RE
+.PP
+\fBmonitor\fR
+.RS 4
+Performs a detailed status check\&. Suggested minimum timeout: 700\&. Suggested interval: 120\&.
+.RE
+.PP
+\fBmonitor (Slave role)\fR
+.RS 4
+Performs a detailed status check\&. Suggested minimum timeout: 700\&. Suggested interval: 121\&.
+.RE
+.PP
+\fBmonitor (Master role)\fR
+.RS 4
+Performs a detailed status check\&. Suggested minimum timeout: 700\&. Suggested interval: 119\&.
+.RE
+.PP
+\fBpromote\fR
+.RS 4
+Promotes the resource to the Master role\&. Suggested minimum timeout: 900\&.
+.RE
+.PP
+\fBdemote\fR
+.RS 4
+Demotes the resource to the Slave role\&. Suggested minimum timeout: 320\&.
+.RE
+.PP
+\fBvalidate\-all\fR
+.RS 4
+Performs a validation of the resource configuration\&. Suggested minimum timeout: 5\&.
+.RE
+.PP
+\fBmeta\-data\fR
+.RS 4
+Retrieves resource agent metadata (internal use only)\&. Suggested minimum timeout: 5\&.
+.RE
+.PP
+\fBmethods\fR
+.RS 4
+Suggested minimum timeout: 5\&.
+.RE
+.PP
+\fBreload\fR
+.RS 4
+Suggested minimum timeout: 5\&.
+.RE
+.SH "EXAMPLE CRM SHELL"
+.PP
+The following is an example configuration for a SAPHanaController resource using the
+\fBcrm\fR(8)
+shell:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+primitive p_SAPHanaController ocf:heartbeat:SAPHanaController \e
+  params \e
+    SID=\fIstring\fR \e
+    InstanceNumber=\fIstring\fR \e
+  op monitor depth="0" timeout="700" interval="120" \e
+  op monitor depth="0" timeout="700" interval="121" role="Slave" \e
+  op monitor depth="0" timeout="700" interval="119" role="Master" 
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ms ms_SAPHanaController p_SAPHanaController \e
+  meta notify="true" interleave="true"
+.fi
+.if n \{\
+.RE
+.\}
+.SH "EXAMPLE PCS"
+.PP
+The following is an example configuration for a SAPHanaController resource using
+\fBpcs\fR(8)
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+pcs resource create p_SAPHanaController ocf:heartbeat:SAPHanaController \e
+  SID=\fIstring\fR \e
+  InstanceNumber=\fIstring\fR \e
+  op monitor OCF_CHECK_LEVEL="0" timeout="700" interval="120" \e
+  op monitor OCF_CHECK_LEVEL="0" timeout="700" interval="121" role="Slave" \e
+  op monitor OCF_CHECK_LEVEL="0" timeout="700" interval="119" role="Master" promotable
+.fi
+.if n \{\
+.RE
+.\}
+.SH "SEE ALSO"
+.PP
+\fBocf_heartbeat_SAPHanaTopology\fR(7) , \fBocf_heartbeat_SAPHanaFilesystem\fR(7)
+.SH "AUTHOR"
+.PP
+\fBSAPHanaSR-angi contributors (see the resource agent source for information about individual authors)\fR
