@@ -20,7 +20,7 @@ jobs:
     name: Perlcritic (advisory)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install
         run: sudo apt-get -y install libtest-perl-critic-perl
       - name: Run
