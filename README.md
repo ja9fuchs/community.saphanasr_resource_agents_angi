@@ -1,5 +1,10 @@
 # community.saphanasr_resource_agents_angi
 
+[![Shellcheck](https://github.com/ja9fuchs/community.saphanasr_resource_agents_angi/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/ja9fuchs/community.saphanasr_resource_agents_angi/actions/workflows/shellcheck.yml)
+[![Mandoc](https://github.com/ja9fuchs/community.saphanasr_resource_agents_angi/actions/workflows/mandoc.yml/badge.svg)](https://github.com/ja9fuchs/community.saphanasr_resource_agents_angi/actions/workflows/mandoc.yml)
+[![Perlcritic](https://github.com/ja9fuchs/community.saphanasr_resource_agents_angi/actions/workflows/perlcritic.yml/badge.svg)](https://github.com/ja9fuchs/community.saphanasr_resource_agents_angi/actions/workflows/perlcritic.yml)
+[![Pylint](https://github.com/ja9fuchs/community.saphanasr_resource_agents_angi/actions/workflows/pylint.yml/badge.svg)](https://github.com/ja9fuchs/community.saphanasr_resource_agents_angi/actions/workflows/pylint.yml)
+
 Vendor-neutral community source for the SAP HANA System Replication resource agents
 (angi generation - unified scale-up and scale-out). Part of the
 [sap-linuxlab](https://github.com/sap-linuxlab) project.
