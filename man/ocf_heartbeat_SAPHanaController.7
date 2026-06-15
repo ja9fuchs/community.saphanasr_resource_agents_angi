@@ -1,6 +1,6 @@
 '\"
 .\"
-.TH "ocf_heartbeat_SAPHanaController" "7" "11/10/2025" "" "OCF resource agents"
+.TH "ocf_heartbeat_SAPHanaController" "7" "2025-11-10" "" "OCF resource agents"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -26,7 +26,6 @@ ocf_heartbeat_SAPHanaController \- Manages two SAP HANA database systems in syst
 .HP \w'\fBSAPHanaController\fR\ 'u
 \fBSAPHanaController\fR [start | stop | status | monitor | promote | demote | meta\-data | validate\-all]
 .SH "DESCRIPTION"
-.PP
 The SAPHanaController resource agent manages two SAP HANA database systems which are configured in system replication\&. SAPHanaController supports Scale\-Up and Scale\-Out scenarios\&.
 .PP
 Managing the two SAP HANA database systems means that the resource agent controls the start/stop of the instances\&. In addition the resource agent is able to monitor the SAP HANA databases to check their availability on landscape host configuration level\&. For this monitoring the resource agent relies on interfaces provided by SAP\&. A third task of the resource agent is to also check the synchronisation status of the two SAP HANA databases\&. If the synchronisation is not "SOK", then the cluster avoids to failover to the secondary side, if the primary fails\&. This is to improve the data consistency\&.
@@ -42,9 +41,7 @@ The resource agent uses the following four interfaces provided by SAP:
 4\&. systemReplicationStatus systemReplicationStatus\&.py is used to poll the status of the system replication\&. The result is stored in the cluster attribute hana_$sid"_site_srPoll_$site\&.
 .PP
 5\&. saphostctrl The interface saphostctrl uses the function ListInstances to figure out the virtual host name of the SAP HANA instance\&. This is the hostname used during the HANA installation\&.
-.PP
 .SH "SUPPORTED PARAMETERS"
-.PP
 \fBSID\fR
 .RS 4
 SAP System Identifier (SID) like "SLE" or "HAE"
@@ -116,7 +113,6 @@ Technical preview: ON_FAIL_ACTION selects the level RA escalates monitor failure
 (optional, string, default "proceed")
 .RE
 .SH "SUPPORTED ACTIONS"
-.PP
 This resource agent supports the following actions (operations):
 .PP
 \fBstart\fR
@@ -179,7 +175,6 @@ Suggested minimum timeout: 5\&.
 Suggested minimum timeout: 5\&.
 .RE
 .SH "EXAMPLE CRM SHELL"
-.PP
 The following is an example configuration for a SAPHanaController resource using the
 \fBcrm\fR(8)
 shell:
@@ -211,7 +206,6 @@ ms ms_SAPHanaController p_SAPHanaController \e
 .RE
 .\}
 .SH "EXAMPLE PCS"
-.PP
 The following is an example configuration for a SAPHanaController resource using
 \fBpcs\fR(8)
 .sp
@@ -230,8 +224,6 @@ pcs resource create p_SAPHanaController ocf:heartbeat:SAPHanaController \e
 .RE
 .\}
 .SH "SEE ALSO"
-.PP
 \fBocf_heartbeat_SAPHanaTopology\fR(7) , \fBocf_heartbeat_SAPHanaFilesystem\fR(7)
 .SH "AUTHOR"
-.PP
 \fBSAPHanaSR-angi contributors (see the resource agent source for information about individual authors)\fR

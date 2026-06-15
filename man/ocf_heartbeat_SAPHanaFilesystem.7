@@ -1,6 +1,6 @@
 '\"
 .\"
-.TH "ocf_heartbeat_SAPHanaFilesystem" "7" "11/10/2025" "" "OCF resource agents"
+.TH "ocf_heartbeat_SAPHanaFilesystem" "7" "2025-11-10" "" "OCF resource agents"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -26,7 +26,6 @@ ocf_heartbeat_SAPHanaFilesystem \- SAPHanaFilesystem \- Monitors mounted SAP HAN
 .HP \w'\fBSAPHanaFilesystem\fR\ 'u
 \fBSAPHanaFilesystem\fR [start | stop | status | monitor | meta\-data | validate\-all]
 .SH "DESCRIPTION"
-.PP
 The SAPHanaFilesystem resource agent (RA) monitors mounted SAP HANA filesystems by checking read/write access\&. This RA does neither mount nor umount any filesystem\&. In case the filesystem monitor fails, the RA decides how to proceed based on HANA system replication status\&. The monitor and action timeouts are significantly shorter than SAPHanaController resource timeouts\&. This results in faster takeover actions\&.
 .PP
 * Behaviour on HANA primary sites
@@ -39,7 +38,6 @@ srHook=SFAIL: In case of monitor failure the Linux cluster tries to stop and res
 .PP
 In case of monitor failure the Linux cluster tries to stop and restart the SAPHanaFilesystem resource (not the real filesystem)\&. This will be repeated until it gains success or migration\-threshold is reached\&.
 .SH "SUPPORTED PARAMETERS"
-.PP
 \fBSID\fR
 .RS 4
 The SAP System Identifier (SID)
@@ -68,7 +66,6 @@ TODO \- parameter to decide fence or ignore\&. default is stop_error to force fe
 (optional, string, no default)
 .RE
 .SH "SUPPORTED ACTIONS"
-.PP
 This resource agent supports the following actions (operations):
 .PP
 \fBstart\fR
@@ -111,7 +108,6 @@ Suggested minimum timeout: 5\&.
 Suggested minimum timeout: 5\&.
 .RE
 .SH "EXAMPLE CRM SHELL"
-.PP
 The following is an example configuration for a SAPHanaFilesystem resource using the
 \fBcrm\fR(8)
 shell:
@@ -129,7 +125,6 @@ primitive p_SAPHanaFilesystem ocf:heartbeat:SAPHanaFilesystem \e
 .RE
 .\}
 .SH "EXAMPLE PCS"
-.PP
 The following is an example configuration for a SAPHanaFilesystem resource using
 \fBpcs\fR(8)
 .sp
@@ -145,8 +140,6 @@ pcs resource create p_SAPHanaFilesystem ocf:heartbeat:SAPHanaFilesystem \e
 .RE
 .\}
 .SH "SEE ALSO"
-.PP
 \fBocf_heartbeat_SAPHanaController\fR(7) , \fBocf_heartbeat_SAPHanaTopology\fR(7)
 .SH "AUTHOR"
-.PP
 \fBSAPHanaSR-angi contributors (see the resource agent source for information about individual authors)\fR
