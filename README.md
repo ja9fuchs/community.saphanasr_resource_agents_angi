@@ -69,13 +69,11 @@ packages can override this at packaging time.
 
 ## Related
 
-| Repository | Distro package | Scope |
+| Scope | Community repo | SUSE upstream |
 |---|---|---|
-| This repo | - | Community neutral source |
-| [SUSE/SAPHanaSR](https://github.com/SUSE/SAPHanaSR) | `SAPHanaSR-angi` (SLES) | SUSE upstream |
-| sap-hana-ha (RHEL) | `sap-hana-ha` | RHEL runtime subset |
-| [community.saphanasr_resource_agents_scaleup](https://github.com/sap-linuxlab/community.saphanasr_resource_agents_scaleup) | - | Classic scale-up |
-| [community.saphanasr_resource_agents_scaleout](https://github.com/sap-linuxlab/community.saphanasr_resource_agents_scaleout) | - | Classic scale-out |
+| Angi (unified scale-up/scale-out) | This repo | [SUSE/SAPHanaSR](https://github.com/SUSE/SAPHanaSR) |
+| Classic scale-up | [community.saphanasr_resource_agents_scaleup](https://github.com/sap-linuxlab/community.saphanasr_resource_agents_scaleup) | [SUSE/SAPHanaSR (maintenance-classic)](https://github.com/SUSE/SAPHanaSR/tree/maintenance-classic) |
+| Classic scale-out | [community.saphanasr_resource_agents_scaleout](https://github.com/sap-linuxlab/community.saphanasr_resource_agents_scaleout) | [SUSE/SAPHanaSR-ScaleOut](https://github.com/SUSE/SAPHanaSR-ScaleOut) |
 
 ## License
 
