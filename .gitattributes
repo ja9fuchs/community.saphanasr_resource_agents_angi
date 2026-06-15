@@ -1,0 +1,4 @@
+ra/*       linguist-language=Shell
+alerts/*   linguist-language=Shell
+hooks/*.py linguist-language=Python
+man/*.7    linguist-language=Roff
