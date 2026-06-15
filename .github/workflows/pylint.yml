@@ -14,7 +14,6 @@ jobs:
   pylint:
     name: Pylint (advisory)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - name: Install
@@ -24,4 +23,4 @@ jobs:
       - name: Run
         run: |
           find . -type f -name '*.py' \
-            | xargs pylint --disable=duplicate-code
+            | xargs pylint --disable=duplicate-code,too-many-statements

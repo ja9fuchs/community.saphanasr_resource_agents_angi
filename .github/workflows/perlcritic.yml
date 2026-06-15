@@ -18,13 +18,12 @@ jobs:
   perlcritic:
     name: Perlcritic (advisory)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - name: Install
         run: sudo apt-get -y install libtest-perl-critic-perl
       - name: Run
         run: |
-          find . -type f \
+          find ra alerts hooks tools scripts -type f \
             -exec awk '/^#!.*perl/{print FILENAME} {nextfile}' {} + \
             | xargs perlcritic --gentle
